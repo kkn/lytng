@@ -1,2 +1,2 @@
 # lytng
-ONNX model servering
+ONNX model server
