@@ -1,26 +1,30 @@
-package io.lytng.onnx.operator.ml;
+package io.lytng.operator.ml;
 
 import io.lytng.onnx.annotation.OnnxOperator;
-import io.lytng.onnx.operator.AbstractOperator;
 import io.lytng.onnx.type.NodeOutputContainer;
+import io.lytng.operator.AbstractOperator;
 import io.lytng.util.NDArrayUtils;
 import onnx.OnnxMlProto3;
 import onnx.OnnxProto3;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
-import java.util.List;
-
+/**
+ * LinearRegressor operator implementation.
+ */
 @OnnxOperator(opType = "LinearRegressor", builder = LinearRegressor.Builder.class)
 public class LinearRegressor extends AbstractOperator {
 
     private INDArray coefficients;
-
     private INDArray intercepts;
+    private int target;
+    private String postTransform;
 
-    private LinearRegressor(List<String> inputs, List<String> outputs, INDArray intercepts, INDArray coefficients) {
-        super(inputs, outputs);
-        this.coefficients = coefficients;
-        this.intercepts = intercepts;
+    private LinearRegressor(Builder builder) {
+        super(builder);
+        coefficients = builder.coefficients;
+        intercepts = builder.intercepts;
+        target = builder.target;
+        postTransform = builder.postTransform;
     }
 
     @Override
@@ -32,26 +36,22 @@ public class LinearRegressor extends AbstractOperator {
     }
 
     public static class Builder extends AbstractOperator.Builder {
-        private final String COEFFICIENTS = "coefficients";
-        private final String INTERCEPTS = "intercepts";
-        private final String POST_TRANSFORM = "post_transform";
-        private final String TARGETS = "targets";
-
         private INDArray coefficients;
-
         private INDArray intercepts;
+        private int target = 1;
+        private String postTransform = "NONE";
 
         @Override
         public Builder attribute(OnnxMlProto3.AttributeProto attribute) {
             switch (attribute.getName()) {
-                case COEFFICIENTS:
+                case "coefficients":
                     coefficients = NDArrayUtils.convertFloatListToArray(attribute.getFloatsList());
                     break;
-                case INTERCEPTS:
+                case "intercepts":
                     intercepts = NDArrayUtils.convertFloatListToArray(attribute.getFloatsList());
                     break;
-                case POST_TRANSFORM:
-                case TARGETS:
+                case "post_transform":
+                case "targets":
                 default:
                     break;
             }
@@ -66,11 +66,8 @@ public class LinearRegressor extends AbstractOperator {
 
         @Override
         public LinearRegressor build() {
-            return new LinearRegressor(
-                    inputs,
-                    outputs,
-                    intercepts,
-                    coefficients);
+            // throw exception if parameters are not valid
+            return new LinearRegressor(this);
         }
     }
 }

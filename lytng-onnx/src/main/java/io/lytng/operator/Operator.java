@@ -1,4 +1,4 @@
-package io.lytng.onnx.operator;
+package io.lytng.operator;
 
 import io.lytng.onnx.type.NodeOutputContainer;
 

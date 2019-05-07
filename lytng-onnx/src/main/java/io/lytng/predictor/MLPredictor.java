@@ -1,4 +1,4 @@
-package io.lytng.onnx.predictor;
+package io.lytng.predictor;
 
 import io.lytng.graph.ExecutionGraph;
 import io.lytng.onnx.type.MultiOutputContainer;
@@ -12,17 +12,17 @@ import java.util.stream.Collectors;
 
 public class MLPredictor {
 
-    public MLPredictor(ExecutionGraph executionGraph) {
-        this.executionGraph = executionGraph;
-    }
-
     protected static final Logger LOG = LoggerFactory.getLogger(MLPredictor.class);
 
-    private ExecutionGraph executionGraph;
+    private final ExecutionGraph executionGraph;
 
     private NodeOutputContainer nodeOutputs = new MultiOutputContainer();
 
-    public Map<String, Object> predict(Map<String, Object> inputs) {
+    public MLPredictor(final ExecutionGraph executionGraph) {
+        this.executionGraph = executionGraph;
+    }
+
+    public synchronized Map<String, Object> predict(Map<String, Object> inputs) {
         nodeOutputs.clear();
 
         nodeOutputs.putAll(inputs);

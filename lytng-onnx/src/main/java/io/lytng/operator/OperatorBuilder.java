@@ -1,4 +1,4 @@
-package io.lytng.onnx.operator;
+package io.lytng.operator;
 
 import onnx.OnnxMlProto3;
 import onnx.OnnxProto3;

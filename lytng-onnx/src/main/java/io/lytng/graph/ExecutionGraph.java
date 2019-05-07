@@ -1,68 +1,59 @@
 package io.lytng.graph;
 
-import io.lytng.onnx.operator.Operator;
+import com.google.common.collect.ImmutableMap;
+import io.lytng.operator.Operator;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
-public class ExecutionGraph {
+public final class ExecutionGraph {
 
     private List<String> inputs;
-
     private List<String> outputs;
+    private ImmutableMap<String, Operator> operatorNodes;
 
-    private HashMap<String, Operator> operatorNodes;
-
-    public ExecutionGraph() {
-        operatorNodes = new LinkedHashMap<>();
+    private ExecutionGraph(Builder builder) {
+        inputs = builder.inputs;
+        outputs = builder.outputs;
+        operatorNodes = ImmutableMap.copyOf(builder.operatorNodes);
     }
 
     public List<String> getInputs() {
         return inputs;
     }
 
-    public void setInputs(List<String> inputs) {
-        this.inputs = inputs;
-    }
-
     public List<String> getOutputs() {
         return outputs;
     }
 
-    public void setOutputs(List<String> outputs) {
-        this.outputs = outputs;
-    }
-
-    public HashMap<String, Operator> getOperatorNodes() {
+    public ImmutableMap<String, Operator> getOperatorNodes() {
         return operatorNodes;
     }
 
-    public void setOperatorNodes(HashMap<String, Operator> operatorNodes) {
-        this.operatorNodes = operatorNodes;
-    }
+    public static class Builder {
+        private List<String> inputs;
+        private List<String> outputs;
+        private Map<String, Operator> operatorNodes = new LinkedHashMap<>();
 
-    public void setOperatorNode(String nodeId, Operator operatorNode) {
-        this.operatorNodes.put(nodeId, operatorNode);
-    }
+        public Builder inputs(List<String> inputs) {
+            this.inputs = inputs;
+            return this;
+        }
 
-    public Operator getOperatorNode(String nodeId) {
-        return this.operatorNodes.getOrDefault(nodeId, null);
-    }
+        public Builder outputs(List<String> outputs) {
+            this.outputs = outputs;
+            return this;
+        }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ExecutionGraph)) return false;
-        ExecutionGraph that = (ExecutionGraph) o;
-        return Objects.equals(getInputs(), that.getInputs()) &&
-                Objects.equals(getOutputs(), that.getOutputs()) &&
-                Objects.equals(getOperatorNodes(), that.getOperatorNodes());
-    }
+        @SuppressWarnings("UnusedReturnValue")
+        public Builder operatorNode(String nodeId, Operator operator) {
+            this.operatorNodes.put(nodeId, operator);
+            return this;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getInputs(), getOutputs(), getOperatorNodes());
+        public ExecutionGraph build() {
+            return new ExecutionGraph(this);
+        }
     }
 }

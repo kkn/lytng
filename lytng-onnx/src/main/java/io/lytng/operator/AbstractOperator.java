@@ -1,4 +1,4 @@
-package io.lytng.onnx.operator;
+package io.lytng.operator;
 
 import onnx.OnnxMlProto3;
 import onnx.OnnxProto3;
@@ -8,12 +8,11 @@ import java.util.List;
 public abstract class AbstractOperator implements Operator {
 
     protected List<String> inputs;
-
     protected List<String> outputs;
 
-    protected AbstractOperator(List<String> inputs, List<String> outputs) {
-        this.inputs = inputs;
-        this.outputs = outputs;
+    protected AbstractOperator(Builder builder) {
+        inputs = builder.inputs;
+        outputs = builder.outputs;
     }
 
     protected abstract static class Builder implements OperatorBuilder {

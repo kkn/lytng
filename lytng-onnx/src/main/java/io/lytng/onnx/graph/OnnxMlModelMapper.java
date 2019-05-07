@@ -1,14 +1,15 @@
 package io.lytng.onnx.graph;
 
 import io.lytng.graph.ExecutionGraph;
-import io.lytng.onnx.operator.OnnxOperatorBuilderFactory;
-import io.lytng.onnx.operator.Operator;
-import io.lytng.onnx.operator.OperatorBuilder;
+import io.lytng.graph.ModelMapper;
+import io.lytng.operator.OnnxOperatorBuilderFactory;
+import io.lytng.operator.Operator;
 import onnx.OnnxMlProto3;
 
 import java.util.stream.Collectors;
 
-public class OnnxMlModelMapper extends AbstractModelMapper<OnnxMlProto3.ModelProto> {
+
+public class OnnxMlModelMapper implements ModelMapper<OnnxMlProto3.ModelProto> {
     public static final OnnxMlModelMapper INSTANCE = new OnnxMlModelMapper();
 
     private OnnxMlModelMapper() {
@@ -16,34 +17,34 @@ public class OnnxMlModelMapper extends AbstractModelMapper<OnnxMlProto3.ModelPro
     }
 
     @Override
-    public ExecutionGraph generateExecutionGraph(OnnxMlProto3.ModelProto model) {
+    public ExecutionGraph importModel(OnnxMlProto3.ModelProto model) {
         OnnxMlProto3.GraphProto graph = model.getGraph();
 
-        ExecutionGraph executionGraph = new ExecutionGraph();
-
-        executionGraph.setInputs(
-                graph.getInputList()
-                        .stream()
-                        .map(OnnxMlProto3.ValueInfoProto::getName)
-                        .collect(Collectors.toList()));
-
-        executionGraph.setOutputs(
-                graph.getOutputList()
-                        .stream()
-                        .map(OnnxMlProto3.ValueInfoProto::getName)
-                        .collect(Collectors.toList()));
+        ExecutionGraph.Builder executionGraphBuilder = new ExecutionGraph.Builder()
+                .inputs(
+                        graph.getInputList()
+                                .stream()
+                                .map(OnnxMlProto3.ValueInfoProto::getName)
+                                .collect(Collectors.toList()))
+                .outputs(
+                        graph.getOutputList()
+                                .stream()
+                                .map(OnnxMlProto3.ValueInfoProto::getName)
+                                .collect(Collectors.toList())
+                );
 
         int i = 0;
         for (OnnxMlProto3.NodeProto node : graph.getNodeList()) {
             String nodeId = (null == node.getName()) ? String.valueOf(i) : node.getName();
-            executionGraph.setOperatorNode(nodeId, generateOperatorNode(node));
+            executionGraphBuilder.operatorNode(nodeId, generateOperatorNode(node));
         }
 
-        return executionGraph;
+        return executionGraphBuilder.build();
     }
 
     private Operator generateOperatorNode(OnnxMlProto3.NodeProto node) {
-        OperatorBuilder builder = OnnxOperatorBuilderFactory.INSTANCE.getBuilder(node.getOpType());
-        return builder.node(node).build();
+        return OnnxOperatorBuilderFactory.INSTANCE.getBuilder(node.getOpType())
+                .node(node)
+                .build();
     }
 }
