@@ -2,8 +2,10 @@ package io.lytng.onnx.graph;
 
 import io.lytng.graph.ExecutionGraph;
 import io.lytng.graph.ModelMapper;
+import io.lytng.onnx.exception.LytngException;
 import io.lytng.operator.OnnxOperatorBuilderFactory;
 import io.lytng.operator.Operator;
+import io.lytng.operator.OperatorBuildException;
 import onnx.OnnxMlProto3;
 
 import java.util.stream.Collectors;
@@ -33,10 +35,14 @@ public class OnnxMlModelMapper implements ModelMapper<OnnxMlProto3.ModelProto> {
                                 .collect(Collectors.toList())
                 );
 
-        int i = 0;
-        for (OnnxMlProto3.NodeProto node : graph.getNodeList()) {
-            String nodeId = (null == node.getName()) ? String.valueOf(i) : node.getName();
-            executionGraphBuilder.operatorNode(nodeId, generateOperatorNode(node));
+        try {
+            int i = 0;
+            for (OnnxMlProto3.NodeProto node : graph.getNodeList()) {
+                String nodeId = (null == node.getName()) ? String.valueOf(i) : node.getName();
+                executionGraphBuilder.operatorNode(nodeId, generateOperatorNode(node));
+            }
+        } catch (OperatorBuildException e) {
+            throw new LytngException(e);
         }
 
         return executionGraphBuilder.build();
